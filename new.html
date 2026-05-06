@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Alcrochets.Ng — Handmade to Adorn</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --forest: #1a5c2a;
+    --forest-dark: #0f3a19;
+    --forest-mid: #2d7a3e;
+    --gold: #c8920a;
+    --gold-light: #e8a820;
+    --gold-pale: #f5d98a;
+    --gold-glow: rgba(200,146,10,0.18);
+    --cream: #faf6ee;
+    --warm: #f2e8d0;
+    --parchment: #ede0c4;
+    --text: #0f2e15;
+    --muted: #5a7a60;
+    --white: #ffffff;
+    --card-bg: #ffffff;
+    --border: rgba(26,92,42,0.13);
+    --shadow: rgba(15,58,25,0.13);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  .image-modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.image-modal img {
+  max-width: 90%;
+  max-height: 80%;
+  border-radius: 12px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  font-size: 2rem;
+  color: white;
+  cursor: pointer;
+}
+
+#modal-caption {
+  color: #fff;
+  margin-top: 15px;
+  font-size: 0.9rem;
+}
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 56px;
+    height: 72px;
+    background: rgba(250,246,238,0.92);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow 0.3s;
+  }
+  nav.scrolled { box-shadow: 0 4px 40px var(--shadow); }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--forest), var(--gold));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: white;
+    box-shadow: 0 2px 10px rgba(26,92,42,0.25);
+  }
+  .nav-logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; color: var(--forest);
+    letter-spacing: 0.01em;
+  }
+  .nav-logo-text span { color: var(--gold); font-style: italic; }
+
+  .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+  .nav-links a {
+    text-decoration: none; color: var(--muted);
+    font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 500; transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+    height: 1.5px; background: var(--gold); transform: scaleX(0);
+    transition: transform 0.25s; transform-origin: left;
+  }
+  .nav-links a:hover { color: var(--forest); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  .nav-wa {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--forest); color: white;
+    padding: 9px 20px; border-radius: 100px; text-decoration: none;
+    font-size: 0.8rem; font-weight: 500; letter-spacing: 0.05em;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(26,92,42,0.3);
+  }
+  .nav-wa:hover { background: var(--gold); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,146,10,0.4); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    padding: 100px 56px 60px;
+    position: relative; overflow: hidden;
+    gap: 60px;
+  }
+
+  /* decorative blobs */
+  .hero-blob-1 {
+    position: absolute; width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,92,42,0.08) 0%, transparent 70%);
+    top: -100px; right: -100px; pointer-events: none;
+  }
+  .hero-blob-2 {
+    position: absolute; width: 400px; height: 400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,146,10,0.1) 0%, transparent 70%);
+    bottom: 0; left: 200px; pointer-events: none;
+  }
+
+  /* diagonal accent strip */
+  .hero-strip {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 46%;
+    background: linear-gradient(160deg, var(--warm) 0%, var(--parchment) 50%, rgba(200,146,10,0.07) 100%);
+    clip-path: polygon(14% 0, 100% 0, 100% 100%, 0% 100%);
+    z-index: 0;
+  }
+
+  .hero-content { position: relative; z-index: 2; }
+
+  .hero-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(26,92,42,0.08), rgba(200,146,10,0.1));
+    border: 1px solid rgba(200,146,10,0.3);
+    color: var(--forest); border-radius: 100px;
+    padding: 7px 18px; font-size: 0.75rem; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 28px;
+  }
+  .hero-pill-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 5vw, 5.5rem);
+    font-weight: 900; line-height: 1.05;
+    color: var(--forest-dark); margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+  .hero h1 .line-gold { color: var(--gold); font-style: italic; }
+  .hero h1 .line-outline {
+    -webkit-text-stroke: 2px var(--forest);
+    color: transparent;
+  }
+
+  .hero-desc {
+    font-size: 1rem; color: var(--muted); line-height: 1.8;
+    max-width: 440px; margin-bottom: 40px; font-weight: 300;
+  }
+
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, var(--forest), var(--forest-mid));
+    color: white; padding: 15px 36px; border-radius: 100px;
+    text-decoration: none; font-size: 0.88rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    box-shadow: 0 8px 28px rgba(26,92,42,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(26,92,42,0.45); }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--forest); font-size: 0.88rem; font-weight: 500;
+    text-decoration: none; letter-spacing: 0.04em;
+    border-bottom: 1.5px solid var(--gold-light); padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--gold); border-color: var(--gold); }
+
+  .hero-stats {
+    display: flex; gap: 36px; margin-top: 52px;
+    padding-top: 36px; border-top: 1px solid var(--border);
+  }
+  .hero-stat strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem; font-weight: 700;
+    color: var(--forest-dark); display: block; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .hero-stat span { font-size: 0.73rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
+
+  /* ── HERO VISUAL ── */
+  .hero-visual {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .hero-card-stack { position: relative; width: 340px; height: 420px; }
+
+  .hero-card-back {
+    position: absolute; width: 280px; height: 340px;
+    background: linear-gradient(135deg, var(--forest-mid), var(--forest));
+    border-radius: 24px; top: 30px; left: 30px;
+    box-shadow: 0 20px 60px rgba(26,92,42,0.3);
+    transform: rotate(6deg);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.12); font-size: 6rem;
+  }
+
+  .hero-card-main {
+    position: absolute; width: 280px;
+    background: var(--white);
+    border-radius: 24px; top: 0; left: 0;
+    box-shadow: 0 24px 70px rgba(15,58,25,0.18);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.8);
+  }
+  .hero-card-img-area {
+    height: 200px;
+    background: linear-gradient(135deg, var(--parchment) 0%, var(--warm) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem; position: relative;
+  }
+  .hero-card-img-area::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(255,255,255,0.4));
+  }
+  .hero-card-body { padding: 20px 22px; }
+  .hero-card-tag {
+    font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; margin-bottom: 6px;
+  }
+  .hero-card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 700; color: var(--forest-dark);
+    margin-bottom: 14px;
+  }
+  .hero-card-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 700; color: var(--forest);
+  }
+  .hero-card-price small { font-size: 0.7rem; font-family: 'Outfit', sans-serif; color: var(--muted); }
+
+  .hero-badge-float {
+    position: absolute; right: -10px; bottom: 80px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: white; border-radius: 16px; padding: 12px 18px;
+    font-size: 0.75rem; font-weight: 600; text-align: center;
+    box-shadow: 0 8px 24px rgba(200,146,10,0.4);
+    line-height: 1.4;
+  }
+  .hero-badge-float strong { display: block; font-size: 1.1rem; }
+
+  /* ── MARQUEE STRIP ── */
+  .marquee-strip {
+    background: linear-gradient(135deg, var(--forest-dark), var(--forest));
+    padding: 16px 0; overflow: hidden; position: relative;
+  }
+  .marquee-track {
+    display: flex; gap: 0;
+    animation: marquee 22s linear infinite;
+    white-space: nowrap; width: max-content;
+  }
+  .marquee-item {
+    display: inline-flex; align-items: center; gap: 12px;
+    color: rgba(255,255,255,0.85); font-size: 0.8rem;
+    letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500;
+    padding: 0 36px;
+  }
+  .marquee-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold-light); flex-shrink: 0;
+  }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── SECTION STRUCTURE ── */
+  .section { padding: 100px 56px; position: relative; }
+
+  .section-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--gold); font-weight: 600; margin-bottom: 14px;
+  }
+  .section-eyebrow::before {
+    content: ''; width: 28px; height: 1.5px; background: var(--gold);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3.5vw, 3.5rem);
+    font-weight: 900; color: var(--forest-dark); line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .section-title em { color: var(--gold); font-style: italic; }
+  .section-sub { color: var(--muted); font-size: 0.95rem; max-width: 480px; line-height: 1.75; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex; gap: 8px; margin: 40px 0 48px; flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 10px 26px; cursor: pointer;
+    font-family: 'Outfit', sans-serif; font-size: 0.8rem;
+    letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500;
+    border-radius: 100px; transition: all 0.25s;
+    border: 1.5px solid var(--border); background: transparent;
+    color: var(--muted);
+  }
+  .filter-btn:hover { border-color: var(--forest); color: var(--forest); background: rgba(26,92,42,0.05); }
+  .filter-btn.active {
+    background: var(--forest); border-color: var(--forest); color: white;
+    box-shadow: 0 4px 16px rgba(26,92,42,0.28);
+  }
+
+  /* ── PRODUCT GRID ── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+    gap: 28px;
+  }
+  .product-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), box-shadow 0.35s;
+    animation: fadeUp 0.5s ease both;
+    position: relative;
+  }
+  .product-card:hover { transform: translateY(-8px); box-shadow: 0 24px 56px rgba(15,58,25,0.14); }
+  .product-card:hover .product-img { transform: scale(1.04); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .product-img-wrap { overflow: hidden; position: relative; }
+  .product-img {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover;
+    display: block; transition: transform 0.5s ease;
+  }
+  .product-img-placeholder {
+    width: 100%; aspect-ratio: 4/3;
+    background: linear-gradient(135deg, var(--warm), var(--parchment));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4rem;
+  }
+  .product-cat-badge {
+    position: absolute; top: 14px; left: 14px;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(6px);
+    color: var(--forest); font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 100px;
+    border: 1px solid rgba(26,92,42,0.15);
+  }
+
+  .product-info { padding: 22px 22px 20px; }
+  .product-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.18rem; font-weight: 700; color: var(--forest-dark);
+    margin-bottom: 7px;
+  }
+  .product-desc {
+    font-size: 0.83rem; color: var(--muted); line-height: 1.65;
+    margin-bottom: 18px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .product-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--border); padding-top: 16px;
+  }
+  .product-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem; font-weight: 700; color: var(--forest);
+  }
+  .product-price small {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.7rem; color: var(--muted); font-weight: 400;
+  }
+
+  .wa-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white; padding: 9px 18px; border-radius: 100px;
+    text-decoration: none; font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.04em;
+    transition: transform 0.18s, box-shadow 0.18s;
+    box-shadow: 0 4px 14px rgba(37,211,102,0.3);
+  }
+  .wa-btn:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(37,211,102,0.45); }
+  .wa-btn svg { width: 15px; height: 15px; }
+
+  /* ── LOADING / EMPTY ── */
+  .loading-wrap {
+    grid-column: 1/-1; display: flex; flex-direction: column;
+    align-items: center; padding: 80px 0; gap: 16px;
+  }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--forest);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--muted); font-size: 0.9rem; }
+
+  .empty-wrap {
+    grid-column: 1/-1; text-align: center; padding: 80px 0;
+    color: var(--muted); font-size: 0.95rem;
+  }
+  .empty-wrap span { font-size: 3rem; display: block; margin-bottom: 12px; }
+
+  /* ── FEATURES STRIP ── */
+  .features-strip {
+    background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 56px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  }
+  .feature-item {
+    padding: 0 36px; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .feature-item:last-child { border-right: none; }
+  .feature-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(26,92,42,0.08), rgba(200,146,10,0.1));
+    border: 1px solid rgba(200,146,10,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin: 0 auto 16px;
+  }
+  .feature-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem; font-weight: 700; color: var(--forest-dark); margin-bottom: 6px;
+  }
+  .feature-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── ABOUT SECTION ── */
+  .about-section {
+    background: linear-gradient(135deg, var(--forest-dark) 0%, var(--forest) 60%, rgba(26,92,42,0.9) 100%);
+    padding: 100px 56px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .about-section::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(200,146,10,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .about-section::after {
+    content: '🧶'; position: absolute; right: 56px; top: 40px;
+    font-size: 10rem; opacity: 0.04; pointer-events: none;
+    line-height: 1;
+  }
+
+  .about-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold-light); font-weight: 600; margin-bottom: 20px;
+  }
+  .about-tag::before { content: ''; width: 24px; height: 1.5px; background: var(--gold-light); }
+
+  .about-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3vw, 3.2rem);
+    color: var(--white); font-weight: 900; line-height: 1.15; margin-bottom: 20px;
+  }
+  .about-section h2 em { color: var(--gold-pale); font-style: italic; }
+  .about-section > div:first-child > p {
+    color: rgba(255,255,255,0.75); line-height: 1.85; font-size: 0.95rem; max-width: 460px;
+  }
+
+  .about-cards { display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1; }
+  .about-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 20px 22px;
+    display: flex; align-items: flex-start; gap: 16px;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .about-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(200,146,10,0.35); }
+  .about-card-icon {
+    width: 42px; height: 42px; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(200,146,10,0.25), rgba(200,146,10,0.1));
+    border: 1px solid rgba(200,146,10,0.3); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+  }
+  .about-card-text strong {
+    display: block; color: var(--white); font-size: 0.82rem;
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .about-card-text span { color: rgba(255,255,255,0.65); font-size: 0.87rem; }
+  .about-card-text a { color: var(--gold-pale); text-decoration: none; transition: color 0.2s; }
+  .about-card-text a:hover { color: var(--gold-light); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--forest-dark);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 32px 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-left { display: flex; align-items: center; gap: 12px; }
+  .footer-logo-mark {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--forest-mid), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: white;
+  }
+  .footer-copy { color: rgba(255,255,255,0.4); font-size: 0.78rem; }
+  .footer-links {
+    display: flex; gap: 24px; align-items: center;
+  }
+  .footer-links a {
+    color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.8rem;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--gold-light); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links, .nav-wa { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; gap: 40px; }
+    .hero-strip { display: none; }
+    .hero-visual { display: none; }
+    .section { padding: 70px 24px; }
+    .features-strip { grid-template-columns: 1fr 1fr; padding: 40px 24px; gap: 30px; }
+    .feature-item { border-right: none; }
+    .about-section { grid-template-columns: 1fr; padding: 70px 24px; gap: 48px; }
+    footer { padding: 24px; flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="main-nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🧶</div>
+    <div class="nav-logo-text">Alcrochets.<span>Ng</span></div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="mailto:alcrochets.ng@gmail.com">Contact</a></li>
+  </ul>
+  <a href="https://wa.me/2348104680447" class="nav-wa" target="_blank">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    WhatsApp Order
+  </a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-blob-1"></div>
+  <div class="hero-blob-2"></div>
+  <div class="hero-strip"></div>
+
+  <div class="hero-content">
+    <div class="hero-pill">
+      <div class="hero-pill-dot"></div>
+      Handcrafted in Ife, Osun State
+    </div>
+    <h1>
+      <span class="line-outline">Crochet</span><br/>
+      Wears For<br/>
+      <span class="line-gold">Kings & Queens</span>
+    </h1>
+    <p class="hero-desc">Stylish handmade crochet wears &amp; accessories for all occasions. Premium quality, affordable prices — crafted with love for every body.</p>
+    <div class="hero-actions">
+      <a href="#collection" class="btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Browse Collection
+      </a>
+      <a href="#about" class="btn-ghost">
+        Our Story →
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <strong>100+</strong>
+        <span>Designs</span>
+      </div>
+      <div class="hero-stat">
+        <strong>500+</strong>
+        <span>Happy Clients</span>
+      </div>
+      <div class="hero-stat">
+        <strong>5★</strong>
+        <span>Rated</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-card-stack">
+      <div class="hero-card-back">🧶</div>
+      <div class="hero-card-main">
+        <div class="hero-card-img-area">🌿</div>
+        <div class="hero-card-body">
+          <div class="hero-card-tag">Featured · Women</div>
+          <div class="hero-card-name">Boho Crochet Set</div>
+          <div class="hero-card-price">₦12,500 <small>NGN</small></div>
+        </div>
+      </div>
+      <div class="hero-badge-float">
+        <strong>New</strong>
+        Arrivals 🎉
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MARQUEE ── -->
+<div class="marquee-strip">
+  <div class="marquee-track" id="marquee">
+    <span class="marquee-item"><span class="marquee-dot"></span>Handmade to Adorn</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Premium Crochet Wears</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Men · Women · Children</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Ife, Osun Nigeria</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Custom Orders Welcome</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Fast Delivery</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Handmade to Adorn</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Premium Crochet Wears</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Men · Women · Children</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Ife, Osun Nigeria</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Custom Orders Welcome</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Fast Delivery</span>
+  </div>
+</div>
+
+<!-- ── FEATURES STRIP ── -->
+<div class="features-strip">
+  <div class="feature-item">
+    <div class="feature-icon">✂️</div>
+    <div class="feature-title">Fully Handmade</div>
+    <div class="feature-desc">Every piece crafted stitch by stitch with care and attention to detail.</div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon">💬</div>
+    <div class="feature-title">Custom Orders</div>
+    <div class="feature-desc">Get your unique size, color, or design made just for you.</div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon">🚚</div>
+    <div class="feature-title">Nationwide Delivery</div>
+    <div class="feature-desc">Fast and reliable delivery across all states in Nigeria.</div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon">💎</div>
+    <div class="feature-title">Premium Quality</div>
+    <div class="feature-desc">Durable, high-grade yarn ensuring lasting beauty and comfort.</div>
+  </div>
+</div>
+
+<!-- ── COLLECTION ── -->
+<section class="section" id="collection">
+  <div class="section-eyebrow">Our Products</div>
+  <h2 class="section-title">The <em>Collection</em></h2>
+  <p class="section-sub">Filter by who you're shopping for and find the perfect crochet piece.</p>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-cat="all">All</button>
+    <button class="filter-btn" data-cat="men">Men</button>
+    <button class="filter-btn" data-cat="women">Women</button>
+    <button class="filter-btn" data-cat="children">Children</button>
+  </div>
+
+  <div class="products-grid" id="products-grid">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <p class="loading-text">Loading collection…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── IMAGE MODAL ── -->
+<div id="image-modal" class="image-modal">
+  <span class="modal-close">&times;</span>
+  <img class="modal-content" id="modal-img">
+  <div id="modal-caption"></div>
+</div>
+
+<!-- ── ABOUT ── -->
+<div class="about-section" id="about">
+  <div>
+    <div class="about-tag">Our Story</div>
+    <h2>Crafted with<br/><em>Purpose &amp; Pride</em></h2>
+    <p>Every stitch in our crochet pieces tells a story of dedication and craft. We believe everyone deserves to wear something handmade with intention — beautiful, durable, and uniquely yours. Based in Ife, Osun, we serve clients across Nigeria and beyond.</p>
+  </div>
+  <div class="about-cards">
+    <div class="about-card">
+      <div class="about-card-icon">📍</div>
+      <div class="about-card-text">
+        <strong>Location</strong>
+        <span>Ife, Osun State, Nigeria</span>
+      </div>
+    </div>
+    <div class="about-card">
+      <div class="about-card-icon">✉️</div>
+      <div class="about-card-text">
+        <strong>Email</strong>
+        <span><a href="mailto:alcrochets.ng@gmail.com">alcrochets.ng@gmail.com</a></span>
+      </div>
+    </div>
+    <div class="about-card">
+      <div class="about-card-icon">📷</div>
+      <div class="about-card-text">
+        <strong>Instagram</strong>
+        <span><a href="https://instagram.com/alcrochets.ng" target="_blank">@alcrochets.ng</a></span>
+      </div>
+    </div>
+    <div class="about-card">
+      <div class="about-card-icon">💬</div>
+      <div class="about-card-text">
+        <strong>WhatsApp Orders</strong>
+        <span><a href="https://wa.me/2348104680447" target="_blank">+234 810 468 0447</a></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-left">
+    <div class="footer-logo-mark">🧶</div>
+    <span class="footer-copy">© 2025 Alcrochets.Ng — Ife, Osun, Nigeria</span>
+  </div>
+  <div class="footer-links">
+    <a href="https://instagram.com/alcrochets.ng" target="_blank">Instagram @alcrochets.ng</a>
+    <a href="mailto:alcrochets.ng@gmail.com">alcrochets.ng@gmail.com</a>
+    <a href="https://wa.me/2348104680447" target="_blank">WhatsApp</a>
+  </div>
+</footer>
+<script>
+  const WA_NUMBER = '2348104680447';
+  const API_URL = 'https://sheetdb.io/api/v1/a27ldv5oaiivj';
+
+  let allProducts = [];
+  let activeCategory = 'all';
+
+  const grid = document.getElementById("products-grid");
+
+  async function fetchProducts() {
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error('Network error');
+
+      const data = await res.json();
+
+      // Normalize data (important!)
+      allProducts = data.map(p => ({
+        name: p.name || p.Name || "Unnamed",
+        price: p.price || p.Price || "0",
+        image: p.image || p.Image || "",
+        category: (p.category || p.Category || "unisex").toLowerCase()
+      }));
+
+      renderProducts();
+
+    } catch (e) {
+      grid.innerHTML = `
+        <div class="empty-wrap">
+          <span>😕</span>
+          <p>Couldn't load products right now.</p>
+        </div>`;
+    }
+  }
+
+  function renderProducts() {
+    const filtered =
+      activeCategory === "all"
+        ? allProducts
+        : allProducts.filter(p => p.category === activeCategory);
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-wrap">
+          <span>🧺</span>
+          <p>No products in this category yet.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(p => `
+      <div class="product-card">
+        <div class="product-img-wrap">
+          ${
+            p.image
+              ? `<img class="product-img" src="${p.image}" alt="${p.name}" data-img="${p.image}" data-name="${p.name}">`
+              : `<div class="product-img-placeholder">🧶</div>`
+          }
+        </div>
+
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">₦${p.price}</div>
+        </div>
+      </div>
+    `).join("");
+
+    attachImageClickEvents();
+  }
+
+  function attachImageClickEvents() {
+    document.querySelectorAll(".product-img").forEach(img => {
+      img.addEventListener("click", () => {
+        openModal(img.dataset.img, img.dataset.name);
+      });
+    });
+  }
+
+  // FILTER BUTTONS
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      activeCategory = btn.dataset.cat;
+      renderProducts();
+    });
+  });
+
+  // MODAL
+  const modal = document.getElementById("image-modal");
+  const modalImg = document.getElementById("modal-img");
+  const captionText = document.getElementById("modal-caption");
+
+  function openModal(src, name) {
+    modal.style.display = "flex";
+    modalImg.src = src;
+    captionText.innerText = name;
+  }
+
+  document.querySelector(".modal-close").onclick = () => {
+    modal.style.display = "none";
+  };
+
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+
+  // INIT
+  fetchProducts();
+</script>
+</body>
+</html>
